@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shot List Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   ATMOS ENERGY BRAND PALETTE
+═══════════════════════════════════════════ */
+:root {
+  --blue:       #2175D9;
+  --blue-dark:  #1558a8;
+  --blue-tint:  #e8f1fc;
+  --blue-mid:   #c2d9f5;
+  --yellow:     #FFC600;
+  --yellow-dark:#c99e00;
+  --yellow-tint:#fff8d6;
+  --black:      #2D2926;
+  --red:        #E4002B;
+  --red-tint:   #fdf0f2;
+  --green:      #009F4D;
+  --grey-light: #C1C6C8;
+  --grey-dark:  #7C878E;
+  --grey-rule:  #dde2e4;
+  --grey-bg:    #f4f5f6;
+  --white:      #ffffff;
+  --text:       #2D2926;
+  --text-mid:   #4a5260;
+  --text-dim:   #7C878E;
+  --sans: 'Source Sans 3', 'Segoe UI', Arial, sans-serif;
+
+  /* Shot list specific */
+  --img-cell:   140px;
+  --row-min:    88px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--grey-bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  min-height: 100vh;
+}
+
+/* ═══════════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════════ */
+.topbar {
+  position: sticky; top: 0; z-index: 200;
+  background: var(--blue);
+  border-bottom: 4px solid var(--yellow);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 54px; gap: 16px;
+  box-shadow: 0 2px 8px rgba(33,117,217,.25);
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.logo-mark {
+  width: 34px; height: 34px; background: var(--yellow); border-radius: 2px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--sans); font-size: 11px; font-weight: 700;
+  color: var(--black); letter-spacing: -.3px; flex-shrink: 0;
+}
+.app-title { font-family: var(--sans); font-size: 18px; font-weight: 700; color: var(--white); }
+.app-title span { font-weight: 300; color: rgba(255,255,255,.85); }
+.topbar-right { display: flex; gap: 8px; align-items: center; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: 2px;
+  cursor: pointer; font-family: var(--sans); font-weight: 700; font-size: 13px;
+  letter-spacing: .03em; padding: 8px 18px; transition: all .15s;
+}
+.btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+.btn-primary { background: var(--yellow); color: var(--black); }
+.btn-primary:hover { background: #ffd740; }
+.btn-ghost { background: transparent; color: rgba(255,255,255,.75); border: 1px solid rgba(255,255,255,.35); }
+.btn-ghost:hover { color: var(--white); border-color: var(--white); }
+.btn-sm { padding: 4px 10px; font-size: 11px; border-radius: 2px; }
+
+/* ═══════════════════════════════════════════
+   MAIN — wide landscape gutter
+═══════════════════════════════════════════ */
+.main { max-width: 1300px; margin: 0 auto; padding: 24px 24px 100px; }
+
+/* ═══════════════════════════════════════════
+   CARDS
+═══════════════════════════════════════════ */
+.card {
+  background: var(--white); border: 1px solid var(--grey-rule);
+  border-left: 4px solid var(--blue); border-radius: 0 2px 2px 0;
+  margin-bottom: 14px; box-shadow: 0 1px 4px rgba(33,117,217,.07);
+}
+.card-head {
+  background: var(--blue); padding: 9px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-title {
+  font-size: 11px; font-weight: 700; letter-spacing: .13em;
+  text-transform: uppercase; color: var(--white);
+}
+.card-body { padding: 16px; }
+
+/* ═══════════════════════════════════════════
+   PRODUCTION HEADER — landscape 6-col
+═══════════════════════════════════════════ */
+.prod-grid {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1.2fr 1.2fr 1fr 1fr;
+  gap: 12px;
+}
+@media(max-width:900px){ .prod-grid{ grid-template-columns: 1fr 1fr 1fr; } }
+
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label {
+  font-size: 10px; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--text-dim);
+}
+.field input, .field select, .field textarea {
+  background: var(--white); border: 1px solid var(--grey-light);
+  border-radius: 2px; color: var(--text); font-family: var(--sans);
+  font-size: 14px; padding: 7px 10px; outline: none; width: 100%;
+  transition: border-color .15s;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-tint);
+}
+
+/* ═══════════════════════════════════════════
+   SHOT TABLE
+═══════════════════════════════════════════ */
+.shot-wrap { overflow-x: auto; }
+
+.shot-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* Column widths — tuned for landscape */
+.shot-table colgroup .c-drag   { width: 28px; }
+.shot-table colgroup .c-shot   { width: 64px; }
+.shot-table colgroup .c-scene  { width: 64px; }
+.shot-table colgroup .c-type   { width: 110px; }
+.shot-table colgroup .c-desc   { width: auto; }
+.shot-table colgroup .c-dial   { width: 22%; }
+.shot-table colgroup .c-img    { width: var(--img-cell); }
+.shot-table colgroup .c-act    { width: 54px; }
+
+.shot-table thead { background: var(--blue-tint); border-bottom: 2px solid var(--blue); }
+.shot-table th {
+  font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--blue-dark); padding: 7px 8px; text-align: left; white-space: nowrap;
+  overflow: hidden;
+}
+
+.shot-table tbody tr { min-height: var(--row-min); }
+.shot-table tbody tr:nth-child(even) { background: #fafbfd; }
+.shot-table tbody tr:hover { background: var(--blue-tint); }
+.shot-table tbody tr.is-divider { background: var(--yellow-tint) !important; }
+.shot-table tbody tr.dragging { opacity: .3; }
+.shot-table tbody tr.drag-over td { border-top: 2px solid var(--yellow); }
+
+.shot-table td {
+  padding: 4px 5px; vertical-align: top;
+  border-bottom: 1px solid var(--grey-rule);
+}
+.shot-table td.vcenter { vertical-align: middle; }
+
+/* drag handle */
+.drag-cell {
+  cursor: grab; color: var(--grey-light); text-align: center;
+  user-select: none; vertical-align: middle !important; padding: 0 4px !important;
+}
+.drag-cell:hover { color: var(--blue); }
+.drag-cell:active { cursor: grabbing; }
+
+/* inline inputs */
+.shot-table input, .shot-table select, .shot-table textarea {
+  background: transparent; border: 1px solid transparent; border-radius: 2px;
+  color: var(--text); font-family: var(--sans); font-size: 13px;
+  padding: 4px 6px; width: 100%; outline: none; transition: all .12s;
+  resize: none;
+}
+.shot-table textarea { min-height: 60px; line-height: 1.5; }
+.shot-table input:hover, .shot-table select:hover, .shot-table textarea:hover {
+  border-color: var(--grey-light); background: var(--white);
+}
+.shot-table input:focus, .shot-table select:focus, .shot-table textarea:focus {
+  border-color: var(--blue); background: var(--white);
+  box-shadow: 0 0 0 2px var(--blue-tint);
+}
+.shot-table select option { background: var(--white); }
+
+/* shot number — bold blue */
+.shot-table .cell-shot input { font-weight: 700; color: var(--blue); text-align: center; }
+.shot-table .cell-scene input { font-weight: 600; text-align: center; }
+
+/* ═══════════════════════════════════════════
+   IMAGE DROP CELL
+═══════════════════════════════════════════ */
+.img-drop-zone {
+  width: 124px; height: 80px;
+  border: 2px dashed var(--grey-light); border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 4px; cursor: pointer;
+  transition: all .15s; position: relative; overflow: hidden;
+  background: var(--grey-bg);
+}
+.img-drop-zone:hover, .img-drop-zone.drag-active {
+  border-color: var(--blue); background: var(--blue-tint);
+}
+.img-drop-zone.has-image { border-style: solid; border-color: var(--grey-light); padding: 0; }
+.img-drop-zone.has-image:hover { border-color: var(--blue); }
+.img-drop-zone .drop-label {
+  font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--grey-dark); text-align: center; line-height: 1.4; pointer-events: none;
+}
+.img-drop-zone svg { color: var(--grey-light); pointer-events: none; }
+.img-drop-zone img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.img-clear {
+  position: absolute; top: 2px; right: 2px;
+  background: rgba(0,0,0,.5); color: #fff; border: none; border-radius: 2px;
+  width: 16px; height: 16px; cursor: pointer; font-size: 10px; line-height: 1;
+  display: none; align-items: center; justify-content: center; padding: 0;
+}
+.img-drop-zone.has-image:hover .img-clear { display: flex; }
+.img-file-input { display: none; }
+
+/* divider row */
+.shot-table tr.is-divider td { background: var(--yellow-tint) !important; }
+.shot-table tr.is-divider input {
+  color: var(--yellow-dark); font-style: italic; font-weight: 600;
+  background: transparent; border-color: transparent;
+}
+.shot-table tr.is-divider .drag-cell { color: #ddc060; }
+
+/* action cell */
+.cell-act {
+  vertical-align: middle !important;
+  text-align: center;
+}
+.row-actions { display: flex; flex-direction: column; gap: 3px; align-items: center; }
+.btn-del {
+  background: transparent; border: none; color: var(--grey-light);
+  cursor: pointer; padding: 3px; border-radius: 2px; line-height: 0; transition: color .15s;
+}
+.btn-del:hover { color: var(--red); }
+.btn-add-below {
+  background: transparent; border: 1px solid var(--grey-rule); color: var(--text-dim);
+  cursor: pointer; padding: 2px 5px; border-radius: 2px; font-family: var(--sans);
+  font-size: 10px; font-weight: 600; letter-spacing: .04em; transition: all .15s;
+  white-space: nowrap;
+}
+.btn-add-below:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-tint); }
+
+/* ═══════════════════════════════════════════
+   ROW BUTTONS (bottom)
+═══════════════════════════════════════════ */
+.row-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.btn-row {
+  background: transparent; border: 1px solid var(--grey-light); border-radius: 2px;
+  color: var(--text-dim); font-family: var(--sans); font-size: 11px; font-weight: 600;
+  letter-spacing: .04em; padding: 5px 13px; cursor: pointer; transition: all .15s;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.btn-row:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-tint); }
+.btn-row.div-btn { border-style: dashed; color: var(--yellow-dark); border-color: var(--yellow); }
+.btn-row.div-btn:hover { background: var(--yellow-tint); border-color: var(--yellow-dark); }
+
+/* ═══════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════ */
+.toast {
+  position: fixed; bottom: 22px; right: 22px; font-family: var(--sans);
+  font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: 2px; z-index: 999;
+  transform: translateY(60px); opacity: 0;
+  transition: all .28s cubic-bezier(.34,1.56,.64,1); pointer-events: none;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.ok  { background: var(--green); color: var(--white); }
+.toast.err { background: var(--red);   color: var(--white); }
+
+/* ═══════════════════════════════════════════
+   PRINT — LANDSCAPE
+═══════════════════════════════════════════ */
+@page { size: landscape; margin: 12mm 10mm; }
+
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { background: #fff !important; margin: 0; }
+  .topbar, .main, .toast { display: none !important; }
+  .print-sheet { display: block !important; }
+}
+
+.print-sheet {
+  display: none;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8pt; color: #2D2926; line-height: 1.3;
+}
+
+/* print header */
+.ps-bar {
+  background: #2175D9; color: #fff; padding: 8px 12px 7px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  border-bottom: 4px solid #FFC600;
+}
+.ps-title { font-size: 18pt; font-weight: 900; color: #fff; letter-spacing: -1px; }
+.ps-project { font-size: 10pt; color: #FFC600; margin-top: 1px; font-weight: 700; }
+.ps-bar-right { text-align: right; }
+.ps-company { font-size: 6pt; color: rgba(255,255,255,.6); letter-spacing: .1em; text-transform: uppercase; }
+.ps-date { font-size: 9pt; color: #fff; margin-top: 2px; font-weight: 600; }
+.ps-bar-meta { font-size: 7pt; color: rgba(255,255,255,.65); }
+
+/* print info strip */
+.ps-strip {
+  display: grid; grid-template-columns: repeat(6, 1fr);
+  background: #e8f1fc; border-bottom: 2px solid #2175D9;
+}
+.ps-cell { padding: 5px 8px; border-right: 1px solid #c2d9f5; }
+.ps-cell:last-child { border-right: none; }
+.ps-clabel { font-size: 5pt; color: #7C878E; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 1px; font-weight: 700; }
+.ps-cval   { font-size: 8.5pt; color: #2D2926; font-weight: 700; }
+
+/* print shot table */
+.ps-t { width: 100%; border-collapse: collapse; margin-top: 4px; }
+.ps-t th {
+  font-size: 6pt; font-weight: 700; color: #2175D9; text-transform: uppercase;
+  letter-spacing: .1em; padding: 3px 6px; border-bottom: 2px solid #2175D9;
+  background: #e8f1fc; text-align: left;
+}
+.ps-t td {
+  padding: 4px 6px; border-bottom: 1px solid #e0e8f0;
+  font-size: 7.5pt; vertical-align: top;
+}
+.ps-t tr:nth-child(even) td { background: #f8fafd; }
+.ps-t tr.pdiv td { background: #fff8d6 !important; font-style: italic; color: #8a6e00; font-weight: 600; font-size: 8pt; }
+.ps-shot { font-weight: 700; color: #2175D9; text-align: center; }
+.ps-scene { font-weight: 600; text-align: center; }
+.ps-type { color: #4a5260; font-size: 7pt; }
+.ps-dim  { color: #7C878E; font-size: 7pt; }
+.ps-img-cell { width: 90px; padding: 3px !important; }
+.ps-img-cell img { width: 84px; height: 54px; object-fit: cover; display: block; border-radius: 1px; }
+.ps-img-empty { width: 84px; height: 54px; background: #f0f0f0; border-radius: 1px; }
+
+.ps-footer {
+  display: flex; justify-content: space-between; padding: 4px 8px;
+  border-top: 2px solid #2175D9; font-size: 5.5pt; color: #7C878E; margin-top: 4px;
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-mark">SL</div>
+    <span class="app-title">Shot List <span>Builder</span></span>
+  </div>
+  <div class="topbar-right">
+    <button class="btn btn-ghost" onclick="clearAll()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+      Clear
+    </button>
+    <button class="btn btn-primary" onclick="doPrint()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print / Save PDF
+    </button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Production Info -->
+  <div class="card">
+    <div class="card-head"><span class="card-title">Production Info</span></div>
+    <div class="card-body">
+      <div class="prod-grid">
+        <div class="field"><label>Project Title</label><input id="projTitle" type="text" placeholder="The Long Meridian"></div>
+        <div class="field"><label>Production Company</label><input id="prodCompany" type="text" placeholder="Silver Gate Films"></div>
+        <div class="field"><label>Shoot Date</label><input id="shootDate" type="date"></div>
+        <div class="field"><label>Shoot Day</label><input id="shootDay" type="text" placeholder="Day 7 of 18"></div>
+        <div class="field"><label>Director</label><input id="director" type="text" placeholder="J. Harmon"></div>
+        <div class="field"><label>Director of Photography</label><input id="dp" type="text" placeholder="A. Nakamura"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shot List -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">Shot List</span>
+      <span style="font-size:10px;color:rgba(255,255,255,.6);font-style:italic">Drag rows to reorder · Drop or click image cells to add reference photos</span>
+    </div>
+    <div class="card-body">
+      <div class="shot-wrap">
+        <table class="shot-table">
+          <colgroup>
+            <col class="c-drag">
+            <col class="c-shot">
+            <col class="c-scene">
+            <col class="c-type">
+            <col class="c-desc">
+            <col class="c-dial">
+            <col class="c-img">
+            <col class="c-act">
+          </colgroup>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Shot #</th>
+              <th>Scene #</th>
+              <th>Shot Type</th>
+              <th>Description</th>
+              <th>Dialogue / Notes</th>
+              <th>Ref. Image</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="shotBody"></tbody>
+        </table>
+      </div>
+      <div class="row-btns">
+        <button class="btn-row" onclick="addShot()">+ Shot</button>
+        <button class="btn-row div-btn" onclick="addShot(true)">+ Scene Divider</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- PRINT SHEET -->
+<div class="print-sheet" id="printSheet"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─── DATA ──────────────────────────────────────────────── */
+let shots = [];
+
+const SHOT_TYPES = [
+  'Wide', 'Medium Wide', 'Medium', 'Medium Close', 'Close-Up',
+  'Extreme CU', 'OTS', 'Two-Shot', 'Insert', 'POV',
+  'Aerial', 'Handheld', 'Steadicam', 'Dolly', 'Crane', 'Other'
+];
+
+/* ─── DRAG ROW REORDER ──────────────────────────────────── */
+function makeDraggable(tr) {
+  tr.setAttribute('draggable', true);
+  tr.addEventListener('dragstart', e => {
+    if (e.target.closest('.img-drop-zone')) { e.preventDefault(); return; }
+    setTimeout(() => tr.classList.add('dragging'), 0);
+    e.dataTransfer.effectAllowed = 'move';
+    window._dragSrc = tr;
+  });
+  tr.addEventListener('dragend', () => {
+    tr.classList.remove('dragging');
+    document.querySelectorAll('.drag-over').forEach(r => r.classList.remove('drag-over'));
+  });
+  tr.addEventListener('dragover', e => {
+    if (e.target.closest('.img-drop-zone')) return;
+    e.preventDefault();
+    document.querySelectorAll('.drag-over').forEach(r => r.classList.remove('drag-over'));
+    if (tr !== window._dragSrc) tr.classList.add('drag-over');
+  });
+  tr.addEventListener('dragleave', e => {
+    if (!tr.contains(e.relatedTarget)) tr.classList.remove('drag-over');
+  });
+  tr.addEventListener('drop', e => {
+    if (e.target.closest('.img-drop-zone')) return;
+    e.preventDefault(); tr.classList.remove('drag-over');
+    const src = window._dragSrc;
+    if (!src || src === tr) return;
+    const rows = [...tr.closest('tbody').querySelectorAll('tr')];
+    const fi = rows.indexOf(src), ti = rows.indexOf(tr);
+    if (fi < 0 || ti < 0) return;
+    const [m] = shots.splice(fi, 1); shots.splice(ti, 0, m);
+    renderShots();
+  });
+}
+
+/* ─── IMAGE COMPRESSION ─────────────────────────────────── */
+function compressImage(file, maxW, maxH, quality, cb) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      const ratio = Math.min(maxW/w, maxH/h, 1);
+      w = Math.round(w * ratio); h = Math.round(h * ratio);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ─── IMAGE DROP ZONE ───────────────────────────────────── */
+function makeDropZone(i) {
+  const zone = document.createElement('div');
+  zone.className = 'img-drop-zone' + (shots[i].img ? ' has-image' : '');
+  zone.title = 'Click to browse or drag & drop an image';
+
+  // content
+  function renderZone() {
+    zone.innerHTML = '';
+    if (shots[i].img) {
+      zone.classList.add('has-image');
+      const img = document.createElement('img');
+      img.src = shots[i].img;
+      zone.appendChild(img);
+      const clr = document.createElement('button');
+      clr.className = 'img-clear'; clr.textContent = '✕'; clr.title = 'Remove image';
+      clr.onclick = e => { e.stopPropagation(); shots[i].img = null; renderZone(); };
+      zone.appendChild(clr);
+    } else {
+      zone.classList.remove('has-image');
+      zone.innerHTML = `
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <span class="drop-label">Drop or<br>click</span>`;
+    }
+  }
+  renderZone();
+
+  // click to browse
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file'; fileInput.accept = 'image/*'; fileInput.className = 'img-file-input';
+  fileInput.onchange = e => {
+    const file = e.target.files[0]; if (!file) return;
+    compressImage(file, 400, 300, 0.82, data => { shots[i].img = data; renderZone(); });
+  };
+  zone.appendChild(fileInput);
+  zone.addEventListener('click', e => {
+    if (e.target.classList.contains('img-clear')) return;
+    fileInput.click();
+  });
+
+  // drag & drop onto zone
+  zone.addEventListener('dragenter', e => { e.preventDefault(); e.stopPropagation(); zone.classList.add('drag-active'); });
+  zone.addEventListener('dragleave', e => { e.stopPropagation(); zone.classList.remove('drag-active'); });
+  zone.addEventListener('dragover',  e => { e.preventDefault(); e.stopPropagation(); });
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); e.stopPropagation();
+    zone.classList.remove('drag-active');
+    const file = e.dataTransfer.files[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    compressImage(file, 400, 300, 0.82, data => { shots[i].img = data; renderZone(); });
+  });
+
+  return zone;
+}
+
+/* ─── ICONS ─────────────────────────────────────────────── */
+const DRAG_IC = `<svg width="12" height="14" viewBox="0 0 12 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="2" y1="3" x2="10" y2="3"/><line x1="2" y1="7" x2="10" y2="7"/><line x1="2" y1="11" x2="10" y2="11"/></svg>`;
+const DEL_IC  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+
+/* ─── CELL BUILDERS ─────────────────────────────────────── */
+function mkInp(val, ph, cb, cls) {
+  const el = document.createElement('input');
+  el.value = val||''; el.placeholder = ph||'';
+  if (cls) el.className = cls;
+  el.addEventListener('input', () => cb(el.value)); return el;
+}
+function mkTa(val, ph, cb) {
+  const el = document.createElement('textarea');
+  el.value = val||''; el.placeholder = ph||''; el.rows = 3;
+  el.addEventListener('input', () => cb(el.value)); return el;
+}
+function mkSel(val, opts, cb) {
+  const el = document.createElement('select');
+  opts.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o; opt.textContent = o;
+    if (o === val) opt.selected = true;
+    el.appendChild(opt);
+  });
+  el.addEventListener('change', () => cb(el.value)); return el;
+}
+function mkTd(child, cls) {
+  const td = document.createElement('td');
+  if (cls) td.className = cls;
+  if (typeof child === 'string') td.innerHTML = child;
+  else if (child) td.appendChild(child);
+  return td;
+}
+
+/* ─── RENDER SHOTS ──────────────────────────────────────── */
+function addShot(div=false, afterIndex=-1) {
+  const newRow = div
+    ? { div:true, label:'' }
+    : { div:false, shot:'', scene:'', type:'Wide', desc:'', dial:'', img:null };
+  if (afterIndex >= 0 && afterIndex < shots.length) {
+    shots.splice(afterIndex + 1, 0, newRow);
+  } else {
+    shots.push(newRow);
+  }
+  renderShots();
+}
+
+function renderShots() {
+  const tbody = document.getElementById('shotBody');
+  tbody.innerHTML = '';
+
+  shots.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    if (row.div) tr.classList.add('is-divider');
+
+    // drag handle
+    const dragTd = document.createElement('td');
+    dragTd.className = 'drag-cell vcenter';
+    dragTd.innerHTML = DRAG_IC;
+    tr.appendChild(dragTd);
+
+    if (row.div) {
+      // divider row: label spans all data cols
+      tr.appendChild(mkTd('')); // shot
+      const ltd = document.createElement('td');
+      ltd.colSpan = 5;
+      ltd.appendChild(mkInp(row.label, '── Scene 14 — Barn Interior ──  or  ── END OF DAY ──', v => { shots[i].label = v; }));
+      tr.appendChild(ltd);
+      tr.appendChild(mkTd('')); // img
+    } else {
+      // shot # 
+      const shotTd = mkTd(null, 'cell-shot');
+      shotTd.appendChild(mkInp(row.shot, '1', v => { shots[i].shot = v; }));
+      tr.appendChild(shotTd);
+      // scene #
+      const sceneTd = mkTd(null, 'cell-scene');
+      sceneTd.appendChild(mkInp(row.scene, '14A', v => { shots[i].scene = v; }));
+      tr.appendChild(sceneTd);
+      // type
+      tr.appendChild(mkTd(mkSel(row.type, SHOT_TYPES, v => { shots[i].type = v; })));
+      // description
+      tr.appendChild(mkTd(mkTa(row.desc, 'Describe the shot, camera move, framing notes…', v => { shots[i].desc = v; })));
+      // dialogue / notes
+      tr.appendChild(mkTd(mkTa(row.dial, 'Dialogue, action cues, or production notes…', v => { shots[i].dial = v; })));
+      // image
+      const imgTd = mkTd(null, 'vcenter');
+      imgTd.appendChild(makeDropZone(i));
+      tr.appendChild(imgTd);
+    }
+
+    // action cell
+    const actTd = document.createElement('td');
+    actTd.className = 'cell-act';
+    const actions = document.createElement('div');
+    actions.className = 'row-actions';
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn-del'; delBtn.innerHTML = DEL_IC; delBtn.title = 'Delete row';
+    delBtn.onclick = () => { shots.splice(i, 1); renderShots(); };
+    actions.appendChild(delBtn);
+    if (!row.div) {
+      const addBtn = document.createElement('button');
+      addBtn.className = 'btn-add-below'; addBtn.textContent = '+'; addBtn.title = 'Insert shot below';
+      addBtn.onclick = () => addShot(false, i);
+      actions.appendChild(addBtn);
+    }
+    actTd.appendChild(actions);
+    tr.appendChild(actTd);
+
+    makeDraggable(tr);
+    tbody.appendChild(tr);
+  });
+}
+
+/* ─── HELPERS ───────────────────────────────────────────── */
+function gv(id) { return (document.getElementById(id)||{}).value||''; }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtDate(v) {
+  if (!v) return '';
+  try { return new Date(v+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); }
+  catch(e) { return v; }
+}
+
+/* ─── BUILD PRINT HTML ──────────────────────────────────── */
+function buildPrintHTML() {
+  const shotRows = shots.map((r,i) => {
+    if (r.div) return `<tr class="pdiv"><td></td><td colspan="5" style="padding-left:8px">${esc(r.label)}</td><td class="ps-img-cell"></td></tr>`;
+    const imgCell = r.img
+      ? `<img src="${r.img}" alt="ref">`
+      : `<div class="ps-img-empty"></div>`;
+    return `<tr>
+      <td class="ps-shot">${esc(r.shot)}</td>
+      <td class="ps-scene">${esc(r.scene)}</td>
+      <td class="ps-type">${esc(r.type)}</td>
+      <td>${esc(r.desc)}</td>
+      <td class="ps-dim">${esc(r.dial)}</td>
+      <td class="ps-img-cell">${imgCell}</td>
+    </tr>`;
+  }).join('');
+
+  const issued = new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const totalShots = shots.filter(r => !r.div).length;
+
+  return `
+  <div class="ps-bar">
+    <div>
+      <div class="ps-title">SHOT LIST</div>
+      <div class="ps-project">${esc(gv('projTitle'))||'Untitled Project'}</div>
+    </div>
+    <div class="ps-bar-right">
+      <div class="ps-company">${esc(gv('prodCompany'))}</div>
+      <div class="ps-date">${fmtDate(gv('shootDate'))||esc(gv('shootDate'))||'—'}</div>
+      <div class="ps-bar-meta">${esc(gv('shootDay'))}${gv('shootDay')?' · ':''}${totalShots} shot${totalShots!==1?'s':''}</div>
+    </div>
+  </div>
+
+  <div class="ps-strip">
+    <div class="ps-cell"><div class="ps-clabel">Director</div><div class="ps-cval">${esc(gv('director'))||'—'}</div></div>
+    <div class="ps-cell"><div class="ps-clabel">DP</div><div class="ps-cval">${esc(gv('dp'))||'—'}</div></div>
+    <div class="ps-cell"><div class="ps-clabel">Date</div><div class="ps-cval" style="font-size:7.5pt;font-weight:400">${fmtDate(gv('shootDate'))||'—'}</div></div>
+    <div class="ps-cell"><div class="ps-clabel">Shoot Day</div><div class="ps-cval">${esc(gv('shootDay'))||'—'}</div></div>
+    <div class="ps-cell"><div class="ps-clabel">Total Shots</div><div class="ps-cval">${totalShots}</div></div>
+    <div class="ps-cell"><div class="ps-clabel">Issued</div><div class="ps-cval" style="font-size:7pt;font-weight:400">${issued}</div></div>
+  </div>
+
+  <table class="ps-t">
+    <thead><tr>
+      <th style="width:38px">SHOT</th>
+      <th style="width:42px">SCENE</th>
+      <th style="width:90px">TYPE</th>
+      <th>DESCRIPTION</th>
+      <th style="width:28%">DIALOGUE / NOTES</th>
+      <th style="width:92px">REF. IMAGE</th>
+    </tr></thead>
+    <tbody>
+      ${shotRows || '<tr><td colspan="6" style="color:#aaa;font-style:italic;padding:8px">No shots added.</td></tr>'}
+    </tbody>
+  </table>
+
+  <div class="ps-footer">
+    <span>CONFIDENTIAL — Do not share or distribute without authorization.</span>
+    <span>${esc(gv('projTitle'))||'Shot List'} · Prepared by ${esc(gv('director'))||'Director'} &amp; ${esc(gv('dp'))||'DP'}</span>
+  </div>`;
+}
+
+/* ─── PRINT / CLEAR ─────────────────────────────────────── */
+function doPrint() {
+  document.getElementById('printSheet').innerHTML = buildPrintHTML();
+  window.print();
+}
+function clearAll() {
+  if (!confirm('Clear all shots and start fresh?')) return;
+  shots = []; renderShots();
+  ['projTitle','prodCompany','shootDay','director','dp'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('shootDate').value = '';
+  showToast('Cleared.');
+}
+function showToast(msg, type='ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `toast ${type} show`;
+  setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+/* ─── SEED DATA ─────────────────────────────────────────── */
+(function seed() {
+  document.getElementById('projTitle').value   = 'The Long Meridian';
+  document.getElementById('prodCompany').value = 'Silver Gate Films';
+  document.getElementById('shootDate').value   = new Date().toISOString().slice(0,10);
+  document.getElementById('shootDay').value    = 'Day 7 of 18';
+  document.getElementById('director').value    = 'J. Harmon';
+  document.getElementById('dp').value          = 'A. Nakamura';
+
+  const s = (o) => shots.push({div:false,shot:'',scene:'',type:'Wide',desc:'',dial:'',img:null,...o});
+  const d = (l) => shots.push({div:true,label:l});
+
+  d('── Scene 14A — Barn Interior ──');
+  s({shot:'1',  scene:'14A', type:'Wide',       desc:'Master: Elena at workbench, discovers envelope under floorboard.',      dial:'"I knew you\'d find this eventually." — Aunt Ruth (O.S.)'});
+  s({shot:'2',  scene:'14A', type:'Medium',      desc:'Elena picks up envelope, turns it over. Tight on her hands.',          dial:'No dialogue. Ambient sound only.'});
+  s({shot:'3',  scene:'14A', type:'Close-Up',    desc:'Insert: Handwriting on envelope — MARCUS, DO NOT OPEN.',              dial:''});
+  s({shot:'4',  scene:'14A', type:'OTS',         desc:'OTS Aunt Ruth watching from doorway as Elena tears envelope open.',    dial:'"Elena, wait—"'});
+  s({shot:'5',  scene:'14A', type:'Close-Up',    desc:'ECU Elena\'s face reading the letter. Light shifts — window behind.', dial:'No dialogue. Score only.'});
+
+  d('── Scene 14B — Barn Exterior ──');
+  s({shot:'6',  scene:'14B', type:'Wide',        desc:'Wide: Elena steps out into blinding sunlight. Yard sprawling behind.', dial:''});
+  s({shot:'7',  scene:'14B', type:'Steadicam',   desc:'Steadicam follows Elena across the yard, 180° arc.',                  dial:''});
+  s({shot:'8',  scene:'14B', type:'Aerial',      desc:'Drone pull-back reveals scale of ranch as Elena walks toward gate.',  dial:''});
+
+  d('── Scene 15 — Gate / Arrival ──');
+  s({shot:'9',  scene:'15',  type:'Wide',        desc:'Wide: Distant figure on horseback approaching down the lane.',        dial:''});
+  s({shot:'10', scene:'15',  type:'Medium',      desc:'Marcus reins in at gate. Horse unsettled. Holds Elena\'s gaze.',      dial:'"You got my letter."'});
+  s({shot:'11', scene:'15',  type:'Two-Shot',    desc:'Two-shot through the fence rails. Neither moves.',                    dial:'"Your father\'s letter." / "Same thing."'});
+  s({shot:'12', scene:'15',  type:'Close-Up',    desc:'CU Elena\'s grip on the envelope. Knuckles white.',                  dial:''});
+
+  renderShots();
+})();
+</script>
+</body>
+</html>
